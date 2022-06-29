@@ -73,7 +73,7 @@ def menuScreen(title, classes, color='white'):
         return option
     return curses.wrapper(character)
 
-# menuScreen('TEST', ['this will return 0','this will return 1', 'this is just to show that you can do more options then just two'], 'blue')
+# menuScreen('title', ['1', '2', '3', 'etc'], 'blue')
 
 
 os.system('clear')
@@ -82,7 +82,8 @@ global tmp
 tmp = 0
 
 if ('--debug' or '-v') in sys.argv:
-    logging.config.fileConfig(fname='math.conf', disable_existing_loggers=False)
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('ED').debug('Debugging is enabled')
 
 if '--save-place' in sys.argv:
     for i in sys.argv:
@@ -97,10 +98,10 @@ if '--save-place' in sys.argv:
         sp = 3
     else:
         sp = 0
-        logging.debug('--save-place was defined, but no value was specified. Set sp to 0.')
+        logging.getLogger('SP').debug('--save-place was defined, but no value was specified. Set sp to 0.')
 else:
     sp = 0
-    logging.debug('Save-place undefined. Set sp to 0.')
+    logging.getLogger('SP').debug('Save-place undefined. Set sp to 0.')
 
 class check:
     def save(func):
@@ -136,7 +137,7 @@ class check:
 
 class menu:
     def main():
-        choice = menuScreen('MAIN MENU', ['General', 'Area', 'Volume', 'Perimiter', '[ Exit ]'], 'blue')
+        choice = menuScreen('MAIN MENU\nIn any case, type "back" to exit an equation.\n', ['General', 'Area', 'Volume', 'Perimiter', '[ Exit ]'], 'blue')
         if choice == 0:
             menu.general()
         elif choice == 1:
@@ -152,7 +153,7 @@ class menu:
         general.main()
 
     def area():
-        choice = menuScreen('AREA MENU', ['Circle','Sphere', '[ Back ]'], 'blue')
+        choice = menuScreen('AREA MENU\n\n', ['Circle','Sphere', '[ Back ]'], 'blue')
         if choice == 0:
             area.circle()
         elif choice == 1:
@@ -161,24 +162,24 @@ class menu:
             menu.main()
 
     def volume():
-        choice = menuScreen('VOLUME MENU', ['Sphere', 'Cylinder', 'Cube', '[ Back ]'], 'blue')
+        choice = menuScreen('VOLUME MENU\n\n', ['Sphere', 'Cylinder', 'Rectangular Prism', '[ Back ]'], 'blue')
         if choice == 0:
             volume.sphere()
         elif choice == 1:
             volume.cylinder()
         elif choice == 2:
-            logging.getLogger('MS').debug('volume.cube() has no function.')
+            volume.rectangular_prism()
             pass
         elif choice == 3:
             menu.main()
 
     def perimiter():
-        choice = menuScreen('PERIMITER MENU', ['Circle', 'Polygon', '[ Back ]'], 'blue')
+        choice = menuScreen('PERIMITER MENU\n\n', ['Circle', 'Polygon', '[ Back ]'], 'blue')
         if choice == 0:
             perimiter.circle()
             pass
         elif choice == 1:
-            logging.getLogger('MS').debug('perimiter.polygon() has no function.')
+            perimiter.polygon()
             pass
         elif choice == 2:
             menu.main()
@@ -186,7 +187,7 @@ class menu:
 
 class general:
     def main():
-        eq = input('Input equation <input "back" to leave>: ')
+        eq = input('Input equation: ')
         if eq == 'back':
             menu.main()
             print()
@@ -194,7 +195,7 @@ class general:
             try:
                 print(simple_eval(eq))
             except:
-                logging.debug('Invalid input.')
+                logging.getLogger('General Main').debug('Invalid input.')
         if sp == 1:
             input()
         exec(check.save('general.main'))
@@ -202,9 +203,12 @@ class general:
 
 class area:
     def circle():
-        radius = float()
-        while radius == float():
-            radius = float(input('Radius: '))
+        radius = ''
+        while radius.replace('.', '').isnumeric() == False:
+            radius = input('Radius: ')
+            if radius == 'back':
+                menu.area()
+        radius = float(radius)
         print('π x '+str(radius)+'²')
         print('π x '+str(radius**2))
         print(math.pi*(radius**2))
@@ -212,9 +216,12 @@ class area:
         exec(check.save('area.circle'))
 
     def sphere():
-        radius = float()
-        while radius == float():
-            radius = float(input('Radius: '))
+        radius = ''
+        while radius.replace('.', '').isnumeric() == False:
+            radius = input('Radius: ')
+            if radius == 'back':
+                menu.area()
+        radius = float(radius)
         print('Surface area is: '+str(4*math.pi*radius**2))
         print()
         print('Working out:')
@@ -233,6 +240,8 @@ class volume:
         radius = ''
         while radius.replace('.', '').isnumeric() == False:
             radius = input('Radius: ')
+            if radius == 'back':
+                menu.volume()
         radius = float(radius)
         print('Volume is: '+str(4/3*math.pi*(radius**3)))
         print()
@@ -247,16 +256,49 @@ class volume:
 
     def cylinder():
         radius = ''
+        height = ''
         while radius.replace('.', '').isnumeric() == False:
             radius = input('Radius: ')
+            if radius == 'back':
+                menu.volume()
         radius = float(radius)
-        height = ''
         while height.replace('.', '').isnumeric() == False:
             height = input('Height: ')
+            if height == 'back':
+                menu.volume()
         height = float(height)
         print('Volume is: '+str(math.pi*(radius**2)*height))
         exec(check.wait())
         exec(check.save('volume.cylinder'))
+
+    def rectangular_prism():
+        length = ''
+        width = ''
+        height = ''
+        while length.replace('.', '').isnumeric() == False:
+            length = input('Length: ')
+            if length == 'back':
+                menu.volume()
+        length = float(length)
+        while width.replace('.', '').isnumeric() == False:
+            width = input('Width: ')
+            if width == 'back':
+                menu.volume()
+        width = float(width)
+        while height.replace('.', '').isnumeric() == False:
+            height = input('Height: ')
+            if height == 'back':
+                menu.volume()
+        height = float(height)
+        print('Volume is: '+str(length*width*height))
+        print()
+        print('Working out:')
+        print(str(length)+' x '+str(width)+' x '+str(height))
+        print(str(str(length*width)+' x '+str(height)))
+        print(length*width*height)
+        print()
+        exec(check.wait())
+        exec(check.save('volume.rectangular_prism'))
 
 
 class perimiter:
@@ -264,6 +306,8 @@ class perimiter:
         radius = ''
         while radius.replace('.', '').isnumeric() == False:
             radius = input('Radius: ')
+            if radius == 'back':
+                menu.perimiter()
         radius = float(radius)
         print('Perimiter is: '+str(2*math.pi*radius))
         print()
@@ -275,7 +319,20 @@ class perimiter:
         exec(check.wait())
         exec(check.save('perimiter.circle'))
 
+    def polygon():
+        sides = input('List of sides, separated by commas: ')
+        if 'back' in sides:
+            menu.perimiter()
+        print('Perimiter is: '+str(simple_eval(sides.replace(',', '+').replace(' ', ''))))
+        print()
+        print('Working out:')
+        print(sides.replace(',', '+').replace(' ', ''))
+        print(simple_eval(sides.replace(',', '+').replace(' ', '')))
+        print()
+        exec(check.wait())
+        exec(check.save('perimiter.polygon'))
+
 
 while True:
     menu.main()
-    logging.getLogger('Init').error('Process has reached further than inital "menu.main()". This should not happen.', )
+    logging.getLogger('Init').error('Process has reached further than inital "menu.main()". This should not happen.')
